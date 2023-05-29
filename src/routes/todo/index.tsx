@@ -1,44 +1,46 @@
 import { component$ } from "@builder.io/qwik";
-import TodoList from "~/components/router-head/todo-list";
 import { Form, routeAction$, routeLoader$ } from "@builder.io/qwik-city";
 
+import styles from "./todo.module.css";
+
 export interface Task {
-  id: number;
   name: string;
-  done: boolean;
 }
 
-const todos: Task[] = [
-  { id: 1, name: "Todo 1", done: true },
-  { id: 2, name: "Todo 2", done: false },
-];
+const todos: Task[] = [];
 
 export const useTodoLoader = routeLoader$(() => {
   return todos;
 });
 
 export const useAddToTodosAction = routeAction$((item) => {
-  todos.push({
-    id: 3,
-    done: false,
-    ...item,
-  } as Task);
-
+  todos.push(item as unknown as Task);
   return { success: true };
 });
 
 export default component$(() => {
-  const todos = useTodoLoader();
+  const tasks = useTodoLoader();
   const action = useAddToTodosAction();
+
   return (
-    <>
-      <TodoList tasks={todos.value}></TodoList>
+    <div class={styles.todo}>
+      <h1>TODO List</h1>
+      <div>
+        {(tasks.value.length && (
+          <ul>
+            {tasks.value.map((task) => (
+              <li class={styles.task} key={task.name}>
+                <span>{task.name}</span>
+              </li>
+            ))}
+          </ul>
+        )) || <span>Empty list</span>}
+      </div>
+
       <Form action={action} spaReset>
-        <input type="text" name="name" required />{" "}
-        <button type="submit" class="button-dark">
-          Add Task
-        </button>
+        <input type="text" name="name" required />
+        <button type="submit">Add Task</button>
       </Form>
-    </>
+    </div>
   );
 });
